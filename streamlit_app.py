@@ -23,6 +23,91 @@ country_codes_w_flags = {
     'RUS': 'RUS 🇷🇺',
     'GBR': 'GBR 🇬🇧',
     'BRA': 'BRA 🇧🇷', 
+    'FRA': 'FRA 🇫🇷',
+    'ITA': 'ITA 🇮🇹',
+    'GRC': 'GRC 🇬🇷',
+    'WLD': 'WLD 🌍',
+    'DEU': 'DEU 🇩🇪',  # Germany
+    'AUS': 'AUS 🇦🇺',  # Australia
+    'ESP': 'ESP 🇪🇸',  # Spain
+    'MEX': 'MEX 🇲🇽',  # Mexico
+    'KOR': 'KOR 🇰🇷',  # South Korea
+    'IDN': 'IDN 🇮🇩',  # Indonesia
+    'TUR': 'TUR 🇹🇷',  # Turkey
+    'SAU': 'SAU 🇸🇦',  # Saudi Arabia
+    'IRN': 'IRN 🇮🇷',  # Iran
+    'CHE': 'CHE 🇨🇭',  # Switzerland
+    'NLD': 'NLD 🇳🇱',  # Netherlands
+    'SWE': 'SWE 🇸🇪',  # Sweden
+    'POL': 'POL 🇵🇱',  # Poland
+    'BEL': 'BEL 🇧🇪',  # Belgium
+    'ARG': 'ARG 🇦🇷',  # Argentina
+    'NOR': 'NOR 🇳🇴',  # Norway
+    'AUT': 'AUT 🇦🇹',  # Austria
+    'ARE': 'ARE 🇦🇪',  # United Arab Emirates
+    'ISR': 'ISR 🇮🇱',
+    'ZAF': 'ZAF 🇿🇦',
+    'SGP': 'SGP 🇸🇬',
+    'MYS': 'MYS 🇲🇾',
+    'PHL': 'PHL 🇵🇭',
+    'COL': 'COL 🇨🇴',
+    'CHL': 'CHL 🇨🇱',
+    'EGY': 'EGY 🇪🇬',
+    'PAK': 'PAK 🇵🇰',
+    'VNM': 'VNM 🇻🇳',
+    'PER': 'PER 🇵🇪',
+    'ROU': 'ROU 🇷🇴',
+    'CZE': 'CZE 🇨🇿',    
+    'PRT': 'PRT 🇵🇹',
+    'DNK': 'DNK 🇩🇰',
+    'FIN': 'FIN 🇫🇮',
+    'HUN': 'HUN 🇭🇺',
+    'NZL': 'NZL 🇳🇿',
+    'GTM': 'GTM 🇬🇹',
+    'HRV': 'HRV 🇭🇷',
+    'URY': 'URY 🇺🇾',
+    'SVN': 'SVN 🇸🇮',
+    'LUX': 'LUX 🇱🇺',
+    'SVK': 'SVK 🇸🇰',
+    'EST': 'EST 🇪🇪',
+    'LVA': 'LVA 🇱🇻',
+    'LTU': 'LTU 🇱🇹',
+    'CRI': 'CRI 🇨🇷',
+    'PAN': 'PAN 🇵🇦',
+    'BGR': 'BGR 🇧🇬',
+    'CYP': 'CYP 🇨🇾',
+    'MLT': 'MLT 🇲🇹',
+    'ISL': 'ISL 🇮🇸',
+    'LIE': 'LIE 🇱🇮',
+    'MCO': 'MCO 🇲🇨',
+    'AND': 'AND 🇦🇩',
+    'MNE': 'MNE 🇲🇪',
+    'SRB': 'SRB 🇷🇸',
+    'ALB': 'ALB 🇦🇱',
+    'MKD': 'MKD 🇲🇰',
+    'BIH': 'BIH 🇧🇦',
+    'KAZ': 'KAZ 🇰🇿',
+    'BLR': 'BLR 🇧🇾',
+    'UKR': 'UKR 🇺🇦',
+    'MDA': 'MDA 🇲🇩',
+    'ARM': 'ARM 🇦🇲',
+    'GEO': 'GEO 🇬🇪',
+    'AZE': 'AZE 🇦🇿',
+    'UZB': 'UZB 🇺🇿',
+    'TJK': 'TJK 🇹🇯',
+    'KGZ': 'KGZ 🇰🇬',
+    'TKM': 'TKM 🇹🇲',
+    'TUR': 'TUR 🇹🇷',
+    'IRQ': 'IRQ 🇮🇶',
+    'SYR': 'SYR 🇸🇾',
+    'JOR': 'JOR 🇯🇴',
+    'LBN': 'LBN 🇱🇧',
+    'PSE': 'PSE 🇵🇸',
+    'YEM': 'YEM 🇾🇪',
+    'OMN': 'OMN 🇴🇲',
+    'QAT': 'QAT 🇶🇦',
+    'BHR': 'BHR 🇧🇭',
+    'KWT': 'KWT 🇰🇼',
 }
 
 # TODO: switch these out with data pulled from the World Bank API
@@ -49,7 +134,7 @@ def get_gdp_data():
     ).rename(columns={'Country Code': 'Country'})
     gdp_df['Country'] = gdp_df['Country'].replace(country_codes_w_flags)
     gdp_df['Year'] = pd.to_numeric(gdp_df['Year'])
-    gdp_df['GDP (T)'] = gdp_df['GDP'] / 1e12
+    gdp_df['GDP (T)'] = round(gdp_df['GDP'] / 1e12, 1)
     gdp_df['GDP'] = (gdp_df['GDP'] / 1e9).round(0) * 1e9
 
     return gdp_df.sort_values(by='Year', ascending=False)
@@ -77,17 +162,27 @@ def get_population_data():
     ).rename(columns={'Country Code': 'Country'})
     population_df['Country'] = population_df['Country'].replace(country_codes_w_flags)
     population_df['Year'] = pd.to_numeric(population_df['Year'])
-    population_df['Population (M)'] = population_df['Population'] / 1e6
+    population_df['Population (M)'] = round(population_df['Population'] / 1e6, 1)
     population_df['Population'] = (population_df['Population'] / 1e6).round(0) * 1e6
 
     return population_df.sort_values(by='Year', ascending=False)
+
+@st.cache_data()
+def get_countries(df):
+    countries = list(country_codes_w_flags.values())
+    countries += [
+        val for val in df['Country'].tolist()
+        if val not in countries
+    ]
+    return countries
 
 def plot_metric_by_group(
         metric_df, 
         var_to_group_by_col, 
         metric_col,
         bar_chart=True,
-        hover_data=None
+        hover_data=None,
+        text_col=None
     ):
     col1, col2 = st.columns(2)
     bar_metric_df = metric_df[metric_df[metric_col].isnull() == False]
@@ -96,8 +191,13 @@ def plot_metric_by_group(
         bar_metric_df['Year'] == max_year
     ]
     bar_metric_df = bar_metric_df.sort_values(by=metric_col, ascending=False)
+    category_order = ['CAN 🇨🇦'] + [ # put Canada first
+        val for val in
+        bar_metric_df[var_to_group_by_col].tolist()
+        if val != 'CAN 🇨🇦'
+    ]
     category_orders={
-        var_to_group_by_col: bar_metric_df[var_to_group_by_col].tolist()
+        var_to_group_by_col: category_order
     }
     with col1:
         p = px.line(
@@ -120,7 +220,8 @@ def plot_metric_by_group(
                     orientation='h',
                     title=f'{metric_col} by {var_to_group_by_col} (Year = {int(max_year)})',
                     hover_data=hover_data,
-                    category_orders=category_orders # TODO: add a text column and use millify to format it nicely
+                    category_orders=category_orders,
+                    text=text_col
                 )
         else:
             p = px.pie(
@@ -195,7 +296,7 @@ from_year, to_year = st.sidebar.slider(
 st.sidebar.caption("Want to say thanks? \n[Buy me a coffee ☕](https://www.buymeacoffee.com/brydon)")
 
 gdp_df_max_year = gdp_df[gdp_df['Year'] == to_year].sort_values(by='GDP', ascending=False)
-countries = gdp_df_max_year['Country'].tolist()
+countries = get_countries(gdp_df_max_year)
 
 if not len(countries):
     st.warning("Select at least one country")
@@ -205,7 +306,7 @@ col1, col2 = st.columns(2)
 with col1:
     metric = st.selectbox(
         'Metric',
-        ['GDP', 'Population'], # TODO: add more metrics
+        ['GDP 💰', 'Population 👥'], # TODO: add more metrics
     )
 
 with col2:
@@ -218,7 +319,7 @@ with col2:
 # -----------------------------------------------------------------------------
 # Show the data.
 
-if metric == 'GDP':
+if metric == 'GDP 💰':
     # Filter the data
     filtered_gdp_df = gdp_df[
         (gdp_df['Country'].isin(selected_countries))
@@ -233,7 +334,12 @@ if metric == 'GDP':
 
     cols = st.columns(len(selected_countries))
     i = 0
-    for country in max_year_filtered_df['Country']:
+    countries = ['CAN 🇨🇦'] + [
+        val for val in
+        max_year_filtered_df['Country']
+        if val != 'CAN 🇨🇦'
+    ]
+    for country in countries:
         with cols[i]:
             show_metric(
                 filtered_gdp_df[filtered_gdp_df['Country'] == country],
@@ -248,10 +354,11 @@ if metric == 'GDP':
         filtered_gdp_df,
         'Country',
         bar_chart=True,
-        metric_col='GDP'
+        metric_col='GDP',
+        text_col='GDP (T)'
     )
 
-elif metric == 'Population': # TODO: consider refactoring to use a function
+elif metric == 'Population 👥': # TODO: consider refactoring to use a function
     # Filter the data
     filtered_population_df = population_df[
         (population_df['Country'].isin(selected_countries))
@@ -281,7 +388,8 @@ elif metric == 'Population': # TODO: consider refactoring to use a function
         filtered_population_df,
         'Country',
         bar_chart=True,
-        metric_col='Population'
+        metric_col='Population',
+        text_col='Population (M)'
     )
 
 st.caption('Data from the [World Bank Open Data](https://data.worldbank.org/) API.')
