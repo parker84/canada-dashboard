@@ -241,7 +241,7 @@ with col1:
     metric = st.selectbox(
         'Metric',
         [   
-            'GPD / Capita 💰',
+            'GDP / Capita 💰',
             'GDP 💰', 
             'Population 👥'
         ],
@@ -257,7 +257,7 @@ with col2:
 # -----------------------------------------------------------------------------
 # Show the data.
 
-if metric == 'GPD / Capita 💰':
+if metric == 'GDP / Capita 💰':
     # Filter the data
     filtered_gdp_per_capita_df = gdp_per_capita_df[
         (gdp_per_capita_df['Country'].isin(selected_countries))
