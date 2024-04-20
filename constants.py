@@ -69,7 +69,15 @@ CORE_COUNTRIES_TO_SCRAPE_INITIALLY = [
     'GRC',
     'WLD',
     'AUS',
-    'SGP'
+    'SGP',
+    'LUX',
+    'CHE',
+    'NOR',
+    'SWE',
+    'DNK',
+    'ISL',
+    'QAT',
+    'IRL',
 ]
 
 COUNTRY_CODES_W_FLAGS = {
@@ -166,4 +174,5 @@ COUNTRY_CODES_W_FLAGS = {
     'QAT': 'QAT 🇶🇦',
     'BHR': 'BHR 🇧🇭',
     'KWT': 'KWT 🇰🇼',
+    'IRL': 'IRL 🇮🇪',
 }
