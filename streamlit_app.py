@@ -1,7 +1,14 @@
 import streamlit as st
+import os
 import pandas as pd
 from plotly import express as px
 from pathlib import Path
+from constants import COUNTRY_CODES_W_FLAGS
+import coloredlogs, logging
+from tqdm import tqdm
+from decouple import config
+logger = logging.getLogger(__name__)
+coloredlogs.install(level=config('LOG_LEVEL', 'INFO'))
 
 # Set the title and favicon that appear in the Browser's tab bar.
 st.set_page_config(
@@ -14,162 +21,48 @@ st.set_page_config(
 # -----------------------------------------------------------------------------
 # Declare some useful functions.
 
-country_codes_w_flags = {
-    'CAN': 'CAN 🇨🇦',
-    'USA': 'USA 🇺🇸',
-    'CHN': 'CHN 🇨🇳',
-    'IND': 'IND 🇮🇳',
-    'JPN': 'JPN 🇯🇵',
-    'RUS': 'RUS 🇷🇺',
-    'GBR': 'GBR 🇬🇧',
-    'BRA': 'BRA 🇧🇷', 
-    'FRA': 'FRA 🇫🇷',
-    'ITA': 'ITA 🇮🇹',
-    'GRC': 'GRC 🇬🇷',
-    'WLD': 'WLD 🌍',
-    'DEU': 'DEU 🇩🇪',  # Germany
-    'AUS': 'AUS 🇦🇺',  # Australia
-    'ESP': 'ESP 🇪🇸',  # Spain
-    'MEX': 'MEX 🇲🇽',  # Mexico
-    'KOR': 'KOR 🇰🇷',  # South Korea
-    'IDN': 'IDN 🇮🇩',  # Indonesia
-    'TUR': 'TUR 🇹🇷',  # Turkey
-    'SAU': 'SAU 🇸🇦',  # Saudi Arabia
-    'IRN': 'IRN 🇮🇷',  # Iran
-    'CHE': 'CHE 🇨🇭',  # Switzerland
-    'NLD': 'NLD 🇳🇱',  # Netherlands
-    'SWE': 'SWE 🇸🇪',  # Sweden
-    'POL': 'POL 🇵🇱',  # Poland
-    'BEL': 'BEL 🇧🇪',  # Belgium
-    'ARG': 'ARG 🇦🇷',  # Argentina
-    'NOR': 'NOR 🇳🇴',  # Norway
-    'AUT': 'AUT 🇦🇹',  # Austria
-    'ARE': 'ARE 🇦🇪',  # United Arab Emirates
-    'ISR': 'ISR 🇮🇱',
-    'ZAF': 'ZAF 🇿🇦',
-    'SGP': 'SGP 🇸🇬',
-    'MYS': 'MYS 🇲🇾',
-    'PHL': 'PHL 🇵🇭',
-    'COL': 'COL 🇨🇴',
-    'CHL': 'CHL 🇨🇱',
-    'EGY': 'EGY 🇪🇬',
-    'PAK': 'PAK 🇵🇰',
-    'VNM': 'VNM 🇻🇳',
-    'PER': 'PER 🇵🇪',
-    'ROU': 'ROU 🇷🇴',
-    'CZE': 'CZE 🇨🇿',    
-    'PRT': 'PRT 🇵🇹',
-    'DNK': 'DNK 🇩🇰',
-    'FIN': 'FIN 🇫🇮',
-    'HUN': 'HUN 🇭🇺',
-    'NZL': 'NZL 🇳🇿',
-    'GTM': 'GTM 🇬🇹',
-    'HRV': 'HRV 🇭🇷',
-    'URY': 'URY 🇺🇾',
-    'SVN': 'SVN 🇸🇮',
-    'LUX': 'LUX 🇱🇺',
-    'SVK': 'SVK 🇸🇰',
-    'EST': 'EST 🇪🇪',
-    'LVA': 'LVA 🇱🇻',
-    'LTU': 'LTU 🇱🇹',
-    'CRI': 'CRI 🇨🇷',
-    'PAN': 'PAN 🇵🇦',
-    'BGR': 'BGR 🇧🇬',
-    'CYP': 'CYP 🇨🇾',
-    'MLT': 'MLT 🇲🇹',
-    'ISL': 'ISL 🇮🇸',
-    'LIE': 'LIE 🇱🇮',
-    'MCO': 'MCO 🇲🇨',
-    'AND': 'AND 🇦🇩',
-    'MNE': 'MNE 🇲🇪',
-    'SRB': 'SRB 🇷🇸',
-    'ALB': 'ALB 🇦🇱',
-    'MKD': 'MKD 🇲🇰',
-    'BIH': 'BIH 🇧🇦',
-    'KAZ': 'KAZ 🇰🇿',
-    'BLR': 'BLR 🇧🇾',
-    'UKR': 'UKR 🇺🇦',
-    'MDA': 'MDA 🇲🇩',
-    'ARM': 'ARM 🇦🇲',
-    'GEO': 'GEO 🇬🇪',
-    'AZE': 'AZE 🇦🇿',
-    'UZB': 'UZB 🇺🇿',
-    'TJK': 'TJK 🇹🇯',
-    'KGZ': 'KGZ 🇰🇬',
-    'TKM': 'TKM 🇹🇲',
-    'TUR': 'TUR 🇹🇷',
-    'IRQ': 'IRQ 🇮🇶',
-    'SYR': 'SYR 🇸🇾',
-    'JOR': 'JOR 🇯🇴',
-    'LBN': 'LBN 🇱🇧',
-    'PSE': 'PSE 🇵🇸',
-    'YEM': 'YEM 🇾🇪',
-    'OMN': 'OMN 🇴🇲',
-    'QAT': 'QAT 🇶🇦',
-    'BHR': 'BHR 🇧🇭',
-    'KWT': 'KWT 🇰🇼',
-}
+def get_and_combine_data_from_folder(folder):
+    logger.info(f'Getting data from {folder} 📂...')
+    dfs = []
+    for file in os.listdir(f'./data/{folder}'):
+        if file.endswith('.csv'):
+            df = pd.read_csv(f'./data/{folder}/{file}')
+            dfs.append(df)
+    combined_df = pd.concat(dfs)
+    logger.info(f'Finished getting data from {folder} ✅')
+    return combined_df 
 
-# TODO: switch these out with data pulled from the World Bank API
 @st.cache_data
 def get_gdp_data():
-    """Grab GDP data from a CSV file.
-
-    This uses caching to avoid having to read the file every time. If we were
-    reading from an HTTP endpoint instead of a file, it's a good idea to set
-    a maximum age to the cache with the TTL argument: @st.cache_data(ttl='1d')
-    """
-
-    DATA_FILENAME = Path(__file__).parent/'data/gdp_data.csv'
-    raw_gdp_df = pd.read_csv(DATA_FILENAME)
-
-    MIN_YEAR = 1960
-    MAX_YEAR = 2022
-
-    gdp_df = raw_gdp_df.melt(
-        ['Country Code'],
-        [str(x) for x in range(MIN_YEAR, MAX_YEAR + 1)],
-        'Year',
-        'GDP',
-    ).rename(columns={'Country Code': 'Country'})
-    gdp_df['Country'] = gdp_df['Country'].replace(country_codes_w_flags)
+    raw_gdp_df = get_and_combine_data_from_folder('gdp')
+    gdp_df = raw_gdp_df.rename(columns={
+        'countryiso3code': 'Country',
+        'date': 'Year',
+        'value': 'GDP'
+    }).dropna(subset=['GDP'])
+    gdp_df['Country'] = gdp_df['Country'].replace(COUNTRY_CODES_W_FLAGS)
     gdp_df['Year'] = pd.to_numeric(gdp_df['Year'])
     gdp_df['GDP (T)'] = round(gdp_df['GDP'] / 1e12, 1)
     gdp_df['GDP'] = (gdp_df['GDP'] / 1e9).round(0) * 1e9
-
-    return gdp_df.sort_values(by='Year', ascending=False)
+    return gdp_df.sort_values(by='Year', ascending=False)    
 
 @st.cache_data
 def get_population_data():
-    """Grab Population data from a CSV file.
-
-    This uses caching to avoid having to read the file every time. If we were
-    reading from an HTTP endpoint instead of a file, it's a good idea to set
-    a maximum age to the cache with the TTL argument: @st.cache_data(ttl='1d')
-    """
-
-    DATA_FILENAME = Path(__file__).parent/'data/population_data.csv'
-    raw_population_df = pd.read_csv(DATA_FILENAME)
-
-    MIN_YEAR = 1960
-    MAX_YEAR = 2022
-
-    population_df = raw_population_df.melt(
-        ['Country Code'],
-        [str(x) for x in range(MIN_YEAR, MAX_YEAR + 1)],
-        'Year',
-        'Population',
-    ).rename(columns={'Country Code': 'Country'})
-    population_df['Country'] = population_df['Country'].replace(country_codes_w_flags)
+    raw_population_df = get_and_combine_data_from_folder('population')
+    population_df = raw_population_df.rename(columns={
+        'countryiso3code': 'Country',
+        'date': 'Year',
+        'value': 'Population'
+    }).dropna(subset=['Population'])
+    population_df['Country'] = population_df['Country'].replace(COUNTRY_CODES_W_FLAGS)
     population_df['Year'] = pd.to_numeric(population_df['Year'])
     population_df['Population (M)'] = round(population_df['Population'] / 1e6, 1)
     population_df['Population'] = (population_df['Population'] / 1e6).round(0) * 1e6
-
     return population_df.sort_values(by='Year', ascending=False)
 
 @st.cache_data()
 def get_countries(df):
-    countries = list(country_codes_w_flags.values())
+    countries = list(COUNTRY_CODES_W_FLAGS.values())
     countries += [
         val for val in df['Country'].tolist()
         if val not in countries
@@ -389,7 +282,7 @@ elif metric == 'Population 👥': # TODO: consider refactoring to use a function
         'Country',
         bar_chart=True,
         metric_col='Population',
-        text_col='Population (M)'
+        text_col='Population (M)' # TODO: add units to the text col
     )
 
 st.caption('Data from the [World Bank Open Data](https://data.worldbank.org/) API.')
