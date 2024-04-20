@@ -2,11 +2,10 @@ import streamlit as st
 import os
 import pandas as pd
 from plotly import express as px
-from pathlib import Path
 from constants import COUNTRY_CODES_W_FLAGS
 import coloredlogs, logging
-from tqdm import tqdm
 from decouple import config
+from scrape import scrape_core_metrics_for_core_countries
 logger = logging.getLogger(__name__)
 coloredlogs.install(level=config('LOG_LEVEL', 'INFO'))
 
@@ -21,7 +20,20 @@ st.set_page_config(
 # -----------------------------------------------------------------------------
 # Declare some useful functions.
 
+def check_if_data_exists(folder):
+    logger.info(f'Checking if data exists in {folder}...')
+    if not os.path.exists(f'./data/{folder}'):
+        logger.warning('No data found. Scrape the data first.')
+        return False
+    else:
+        logger.info('Data found! ✅')
+        return True
+
 def get_and_combine_data_from_folder(folder):
+    data_exists = check_if_data_exists(folder)
+    if not data_exists:
+        logger.info('Scraping the data...')
+        scrape_core_metrics_for_core_countries()
     logger.info(f'Getting data from {folder} 📂...')
     dfs = []
     for file in os.listdir(f'./data/{folder}'):

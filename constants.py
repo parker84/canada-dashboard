@@ -3,13 +3,13 @@
 CORE_URLS_PER_COUNTRY = {
     'gdp_per_capita': 'https://api.worldbank.org/v2/countries/{country}/indicators/NY.GDP.PCAP.CD?format=json',
     'consumer_price_index': 'http://api.worldbank.org/v2/countries/{country}/indicator/FP.CPI.TOTL?format=json',
-    'unemployment_rate': 'http://api.worldbank.org/v2/countries/{country}/indicator/SL.UEM.TOTL.ZS?format=json',
     'gdp': 'http://api.worldbank.org/v2/countries/{country}/indicator/NY.GDP.MKTP.CD?format=json',
     'gdp_growth_rate': 'http://api.worldbank.org/v2/countries/{country}/indicator/NY.GDP.MKTP.KD.ZG?format=json',
-    'labour_force_participation_rate': 'http://api.worldbank.org/v2/countries/{country}/indicator/SL.TLF.CACT.ZS?format=json',
     'population': 'http://api.worldbank.org/v2/countries/{country}/indicator/SP.POP.TOTL?format=json',
     'government_debt': 'http://api.worldbank.org/v2/countries/{country}/indicator/GC.DOD.TOTL.GD.ZS?format=json',
     'population_growth_rate': 'http://api.worldbank.org/v2/countries/{country}/indicator/SP.POP.GROW?format=json',
+    'labour_force_participation_rate': 'http://api.worldbank.org/v2/countries/{country}/indicator/SL.TLF.CACT.ZS?format=json',
+    'unemployment_rate': 'http://api.worldbank.org/v2/countries/{country}/indicator/SL.UEM.TOTL.ZS?format=json',
     'exports': 'http://api.worldbank.org/v2/countries/{country}/indicator/NE.EXP.GNFS.CD?format=json',
     'imports': 'http://api.worldbank.org/v2/countries/{country}/indicator/NE.IMP.GNFS.CD?format=json',
 }
