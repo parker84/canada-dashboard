@@ -54,7 +54,11 @@ def get_gdp_data():
     }).dropna(subset=['GDP'])
     gdp_df['Country'] = gdp_df['Country'].replace(COUNTRY_CODES_W_FLAGS)
     gdp_df['Year'] = pd.to_numeric(gdp_df['Year'])
-    gdp_df['GDP (T)'] = round(gdp_df['GDP'] / 1e12, 1)
+    gdp_df['GDP (T-int)'] = round(gdp_df['GDP'] / 1e12, 1)
+    gdp_df['GDP (T)'] = [
+        f'${val:,.1f}T' for val in
+        gdp_df['GDP (T-int)']
+    ]
     gdp_df['GDP'] = (gdp_df['GDP'] / 1e9).round(0) * 1e9
     return gdp_df.sort_values(by='Year', ascending=False)    
 
@@ -68,9 +72,31 @@ def get_population_data():
     }).dropna(subset=['Population'])
     population_df['Country'] = population_df['Country'].replace(COUNTRY_CODES_W_FLAGS)
     population_df['Year'] = pd.to_numeric(population_df['Year'])
-    population_df['Population (M)'] = round(population_df['Population'] / 1e6, 1)
+    population_df['Population (M-int)'] = round(population_df['Population'] / 1e6, 1)
+    population_df['Population (M)'] = [
+        f'{val:,.1f}M' for val in
+        population_df['Population (M-int)']
+    ]
     population_df['Population'] = (population_df['Population'] / 1e6).round(0) * 1e6
     return population_df.sort_values(by='Year', ascending=False)
+
+@st.cache_data
+def get_gdp_per_capita():
+    raw_gdp_per_capita_df = get_and_combine_data_from_folder('gdp_per_capita')
+    gdp_per_capita_df = raw_gdp_per_capita_df.rename(columns={
+        'countryiso3code': 'Country',
+        'date': 'Year',
+        'value': 'GDP per Capita'
+    }).dropna(subset=['GDP per Capita'])
+    gdp_per_capita_df['Country'] = gdp_per_capita_df['Country'].replace(COUNTRY_CODES_W_FLAGS)
+    gdp_per_capita_df['Year'] = pd.to_numeric(gdp_per_capita_df['Year'])
+    gdp_per_capita_df['GDP per Capita (k-int)'] = round(gdp_per_capita_df['GDP per Capita'] / 1e3, 1)
+    gdp_per_capita_df['GDP per Capita (k)'] = [
+        f'${val:,.0f}k' for val in
+        gdp_per_capita_df['GDP per Capita (k-int)']
+    ]
+    gdp_per_capita_df['GDP per Capita'] = (gdp_per_capita_df['GDP per Capita'] / 1e3).round(0) * 1e3
+    return gdp_per_capita_df.sort_values(by='Year', ascending=False)
 
 @st.cache_data()
 def get_countries(df):
@@ -79,6 +105,7 @@ def get_countries(df):
         val for val in df['Country'].tolist()
         if val not in countries
     ]
+    countries = [country for country in countries if country in df['Country'].unique().tolist()]
     return countries
 
 def plot_metric_by_group(
@@ -86,8 +113,8 @@ def plot_metric_by_group(
         var_to_group_by_col, 
         metric_col,
         bar_chart=True,
-        hover_data=None,
-        text_col=None
+        text_col=None,
+        tickformat=None
     ):
     col1, col2 = st.columns(2)
     bar_metric_df = metric_df[metric_df[metric_col].isnull() == False]
@@ -106,28 +133,29 @@ def plot_metric_by_group(
     }
     with col1:
         p = px.line(
-                metric_df,
-                x='Year',
-                y=metric_col,
-                color=var_to_group_by_col,
-                title=f'Yearly {metric_col} by {var_to_group_by_col}',
-                hover_data=hover_data,
-                category_orders=category_orders,
-
-            )
+            metric_df,
+            x='Year',
+            y=metric_col,
+            color=var_to_group_by_col,
+            title=f'Yearly {metric_col} by {var_to_group_by_col}',
+            category_orders=category_orders,
+            hover_data=['Year', metric_col, var_to_group_by_col]
+        )
+        p.update_yaxes(tickformat=tickformat)
         st.plotly_chart(p, use_container_width=True)
     with col2:
         if bar_chart:
             p = px.bar(
-                    bar_metric_df,
-                    y=var_to_group_by_col,
-                    x=metric_col,
-                    orientation='h',
-                    title=f'{metric_col} by {var_to_group_by_col} (Year = {int(max_year)})',
-                    hover_data=hover_data,
-                    category_orders=category_orders,
-                    text=text_col
-                )
+                bar_metric_df,
+                y=var_to_group_by_col,
+                x=metric_col,
+                orientation='h',
+                title=f'{metric_col} by {var_to_group_by_col} (Year = {int(max_year)})',
+                hover_data={text_col: False, var_to_group_by_col: True, metric_col: True},
+                category_orders=category_orders,
+                text=text_col
+            )
+            p.update_xaxes(tickformat=tickformat)
         else:
             p = px.pie(
                 bar_metric_df,
@@ -136,7 +164,7 @@ def plot_metric_by_group(
                 title=f'{metric_col} by {var_to_group_by_col} (Year = {int(max_year)})',
                 hole=0.4,
                 category_orders=category_orders,
-                hover_data=hover_data
+                hover_data={text_col: False, var_to_group_by_col: True, metric_col: True},
             )
         st.plotly_chart(p, use_container_width=True)
         return category_orders
@@ -177,6 +205,7 @@ def show_metric(
 # Load the data.
 gdp_df = get_gdp_data()
 population_df = get_population_data()
+gdp_per_capita_df = get_gdp_per_capita()
 
 # -----------------------------------------------------------------------------
 # Setup the dashboard.
@@ -211,7 +240,11 @@ col1, col2 = st.columns(2)
 with col1:
     metric = st.selectbox(
         'Metric',
-        ['GDP 💰', 'Population 👥'], # TODO: add more metrics
+        [   
+            'GPD / Capita 💰',
+            'GDP 💰', 
+            'Population 👥'
+        ],
     )
 
 with col2:
@@ -224,7 +257,47 @@ with col2:
 # -----------------------------------------------------------------------------
 # Show the data.
 
-if metric == 'GDP 💰':
+if metric == 'GPD / Capita 💰':
+    # Filter the data
+    filtered_gdp_per_capita_df = gdp_per_capita_df[
+        (gdp_per_capita_df['Country'].isin(selected_countries))
+        & (gdp_per_capita_df['Year'] <= to_year)
+        & (from_year <= gdp_per_capita_df['Year'])
+    ]
+    max_year_filtered_df = filtered_gdp_per_capita_df[filtered_gdp_per_capita_df['Year'] == to_year].sort_values(by='GDP per Capita', ascending=False)
+
+    st.header('Annual GDP per Capita by Country', divider='gray')
+
+    ''
+
+    countries = ['CAN 🇨🇦'] + [
+        val for val in
+        max_year_filtered_df['Country']
+        if val != 'CAN 🇨🇦'
+    ]
+    cols = st.columns(len(selected_countries))
+    i = 0
+    for country in countries:
+        with cols[i]:
+            show_metric(
+                filtered_gdp_per_capita_df[filtered_gdp_per_capita_df['Country'] == country],
+                'GDP per Capita (k-int)',
+                title=country,
+                format_str='${:,.0f}k',
+                delta_color='normal',
+            )
+        i += 1
+
+    plot_metric_by_group(
+        filtered_gdp_per_capita_df,
+        'Country',
+        bar_chart=True,
+        metric_col='GDP per Capita',
+        text_col='GDP per Capita (k)',
+        tickformat='$.2s'
+    )
+
+elif metric == 'GDP 💰':
     # Filter the data
     filtered_gdp_df = gdp_df[
         (gdp_df['Country'].isin(selected_countries))
@@ -248,7 +321,7 @@ if metric == 'GDP 💰':
         with cols[i]:
             show_metric(
                 filtered_gdp_df[filtered_gdp_df['Country'] == country],
-                'GDP (T)',
+                'GDP (T-int)',
                 title=country,
                 format_str='${:,.1f}T',
                 delta_color='normal',
@@ -260,7 +333,8 @@ if metric == 'GDP 💰':
         'Country',
         bar_chart=True,
         metric_col='GDP',
-        text_col='GDP (T)'
+        text_col='GDP (T)',
+        tickformat='$.2s'
     )
 
 elif metric == 'Population 👥': # TODO: consider refactoring to use a function
@@ -276,13 +350,18 @@ elif metric == 'Population 👥': # TODO: consider refactoring to use a function
 
     ''
 
+    countries = ['CAN 🇨🇦'] + [
+        val for val in
+        max_year_filtered_df['Country']
+        if val != 'CAN 🇨🇦'
+    ]
     cols = st.columns(len(selected_countries))
     i = 0
-    for country in max_year_filtered_df['Country']:
+    for country in countries:
         with cols[i]:
             show_metric(
                 filtered_population_df[filtered_population_df['Country'] == country],
-                'Population (M)',
+                'Population (M-int)',
                 title=country,
                 format_str='{:,.1f}M',
                 delta_color='normal',
@@ -294,7 +373,7 @@ elif metric == 'Population 👥': # TODO: consider refactoring to use a function
         'Country',
         bar_chart=True,
         metric_col='Population',
-        text_col='Population (M)' # TODO: add units to the text col
+        text_col='Population (M)'
     )
 
 st.caption('Data from the [World Bank Open Data](https://data.worldbank.org/) API.')

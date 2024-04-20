@@ -5,6 +5,7 @@ CORE_URLS_PER_COUNTRY = {
     'consumer_price_index': 'http://api.worldbank.org/v2/countries/{country}/indicator/FP.CPI.TOTL?format=json',
     'gdp': 'http://api.worldbank.org/v2/countries/{country}/indicator/NY.GDP.MKTP.CD?format=json',
     'gdp_growth_rate': 'http://api.worldbank.org/v2/countries/{country}/indicator/NY.GDP.MKTP.KD.ZG?format=json',
+    'house_price_index': 'http://api.worldbank.org/v2/countries/{country}/indicator/NY.GDP.MKTP.CD?format=json',
     'population': 'http://api.worldbank.org/v2/countries/{country}/indicator/SP.POP.TOTL?format=json',
     'government_debt': 'http://api.worldbank.org/v2/countries/{country}/indicator/GC.DOD.TOTL.GD.ZS?format=json',
     'population_growth_rate': 'http://api.worldbank.org/v2/countries/{country}/indicator/SP.POP.GROW?format=json',
