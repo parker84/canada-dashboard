@@ -13,6 +13,7 @@ from get_data import (
     get_population_growth_rate,
     get_labour_force_participation_rate,
     get_unemployment_rate,
+    get_trade_balance,
     get_exports,
     get_imports
 )
@@ -193,6 +194,7 @@ gdp_growth_rate_df = get_gdp_growth_rate()
 population_growth_rate_df = get_population_growth_rate()
 labour_force_participation_rate_df = get_labour_force_participation_rate()
 unemployment_rate_df = get_unemployment_rate()
+trade_balance_df = get_trade_balance()
 exports_df = get_exports()
 imports_df = get_imports()
 
@@ -241,6 +243,7 @@ with col1:
             'Unemployment Rate 🛋️',
             'Exports ➡️',
             'Imports ⬅️',
+            'Trade Balance 📦',
         ],
     )
 
@@ -417,6 +420,21 @@ elif metric == 'Imports ⬅️':
         format_metric_str='${:,.2f}T',
         metric_delta_color='normal',
         chart_tick_format='$.3s'
+    )
+
+elif metric == 'Trade Balance 📦':
+    create_section_for_metric(
+        metric_df=trade_balance_df,
+        selected_countries=selected_countries,
+        to_year=to_year,
+        from_year=from_year,
+        section_title='Trade Balance (% of GDP)',
+        metric_col_name='Trade Balance (%)',
+        chart_col_name='Trade Balance',
+        text_col_name='Trade Balance (%-str)',
+        format_metric_str='{:.1f}%',
+        metric_delta_color='normal',
+        chart_tick_format=".1%"
     )
 
 st.caption('Data from the [World Bank Open Data](https://data.worldbank.org/) API.')

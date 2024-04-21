@@ -13,15 +13,16 @@ CORE_URLS_PER_COUNTRY = {
     'unemployment_rate': 'http://api.worldbank.org/v2/countries/{country}/indicator/SL.UEM.TOTL.ZS?format=json',
     'exports': 'http://api.worldbank.org/v2/countries/{country}/indicator/NE.EXP.GNFS.CD?format=json',
     'imports': 'http://api.worldbank.org/v2/countries/{country}/indicator/NE.IMP.GNFS.CD?format=json',
+    'trade_balance': 'http://api.worldbank.org/v2/countries/{country}/indicator/NE.TRD.GNFS.ZS?format=json',
+    'birth_rate': 'http://api.worldbank.org/v2/countries/{country}/indicator/SP.DYN.CBRT.IN?format=json',
+    'life_expectancy': 'http://api.worldbank.org/v2/countries/{country}/indicator/SP.DYN.LE00.IN?format=json',
 }
 
 EXTRA_URLS_PER_COUNTRY = {
-    'trade_balance': 'http://api.worldbank.org/v2/countries/{country}/indicator/NE.TRD.GNFS.ZS?format=json',
     'net_migration_rate': 'http://api.worldbank.org/v2/countries/{country}/indicator/SM.POP.NETM?format=json',
     'birth_rate': 'http://api.worldbank.org/v2/countries/{country}/indicator/SP.DYN.CBRT.IN?format=json',
     'population_density': 'http://api.worldbank.org/v2/countries/{country}/indicator/EN.POP.DNST?format=json',
     'urban_population': 'http://api.worldbank.org/v2/countries/{country}/indicator/SP.URB.TOTL.IN.ZS?format=json',
-    'life_expectancy': 'http://api.worldbank.org/v2/countries/{country}/indicator/SP.DYN.LE00.IN?format=json',
     'mortality_rate': 'http://api.worldbank.org/v2/countries/{country}/indicator/SH.DYN.MORT?format=json',
     'fertility_rate': 'http://api.worldbank.org/v2/countries/{country}/indicator/SP.DYN.TFRT.IN?format=json',
     'gini_index': 'http://api.worldbank.org/v2/countries/{country}/indicator/SI.POV.GINI?format=json',
@@ -39,9 +40,7 @@ EXTRA_URLS_PER_COUNTRY = {
     'forest_area': 'http://api.worldbank.org/v2/countries/{country}/indicator/AG.LND.FRST.ZS?format=json',
     'arable_land': 'http://api.worldbank.org/v2/countries/{country}/indicator/AG.LND.ARBL.ZS?format=json',
     'cereal_yield': 'http://api.worldbank.org/v2/countries/{country}/indicator/AG.YLD.CREL.KG?format=json',
-    'food_production_index': 'http://api.worldbank.org/v2/countries/{country}/indicator/AG.PRD.FOOD.XD?format=json',
-    'life_satisfaction': 'http://api.worldbank.org/v2/countries/{country}/indicator/AG.LND.ARBL.ZS?format=json',
-    'happiness_index': 'http://api.worldbank.org/v2/countries/{country}/indicator/AG.LND.ARBL.ZS?format=json',
+    'food_production_index': 'http://api.worldbank.org/v2/countries/{country}/indicator/AG.PRD.FOOD.XD?format=json'
 }
 
 CORE_URLS_ALL_COUNTRIES = {

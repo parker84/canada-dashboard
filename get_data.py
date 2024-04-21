@@ -205,6 +205,24 @@ def get_unemployment_rate():
     return unemployment_rate_df.sort_values(by='Year', ascending=False)
 
 @st.cache_data()
+def get_trade_balance():
+    raw_trade_balance_df = get_and_combine_data_from_folder('trade_balance')
+    trade_balance_df = raw_trade_balance_df.rename(columns={
+        'countryiso3code': 'Country',
+        'date': 'Year',
+        'value': 'Trade Balance'
+    }).dropna(subset=['Trade Balance'])
+    trade_balance_df['Country'] = trade_balance_df['Country'].replace(COUNTRY_CODES_W_FLAGS)
+    trade_balance_df['Year'] = pd.to_numeric(trade_balance_df['Year'])
+    trade_balance_df['Trade Balance (%)'] = trade_balance_df['Trade Balance'].round(1)
+    trade_balance_df['Trade Balance (%-str)'] = [
+        f'{round(val, 1)}%' for val in
+        trade_balance_df['Trade Balance (%)']
+    ]
+    trade_balance_df['Trade Balance'] = (trade_balance_df['Trade Balance'] / 100).round(3)
+    return trade_balance_df.sort_values(by='Year', ascending=False)
+
+@st.cache_data()
 def get_exports():
     raw_exports_df = get_and_combine_data_from_folder('exports')
     exports_df = raw_exports_df.rename(columns={
