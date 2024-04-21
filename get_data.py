@@ -185,3 +185,21 @@ def get_population_growth_rate():
     ]
     population_growth_rate_df['Population Growth Rate'] = (population_growth_rate_df['Population Growth Rate'] / 100).round(3)
     return population_growth_rate_df.sort_values(by='Year', ascending=False)
+
+@st.cache_data()
+def get_unemployment_rate():
+    raw_unemployment_rate_df = get_and_combine_data_from_folder('unemployment_rate')
+    unemployment_rate_df = raw_unemployment_rate_df.rename(columns={
+        'countryiso3code': 'Country',
+        'date': 'Year',
+        'value': 'Unemployment Rate'
+    }).dropna(subset=['Unemployment Rate'])
+    unemployment_rate_df['Country'] = unemployment_rate_df['Country'].replace(COUNTRY_CODES_W_FLAGS)
+    unemployment_rate_df['Year'] = pd.to_numeric(unemployment_rate_df['Year'])
+    unemployment_rate_df['Unemployment Rate (%)'] = unemployment_rate_df['Unemployment Rate'].round(1)
+    unemployment_rate_df['Unemployment Rate (%-str)'] = [
+        f'{round(val, 1)}%' for val in
+        unemployment_rate_df['Unemployment Rate (%)']
+    ]
+    unemployment_rate_df['Unemployment Rate'] = (unemployment_rate_df['Unemployment Rate'] / 100).round(3)
+    return unemployment_rate_df.sort_values(by='Year', ascending=False)

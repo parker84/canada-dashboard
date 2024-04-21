@@ -10,7 +10,7 @@ CORE_URLS_PER_COUNTRY = {
     'government_debt': 'http://api.worldbank.org/v2/countries/{country}/indicator/GC.DOD.TOTL.GD.ZS?format=json',
     'population_growth_rate': 'http://api.worldbank.org/v2/countries/{country}/indicator/SP.POP.GROW?format=json',
     'labour_force_participation_rate': 'http://api.worldbank.org/v2/countries/{country}/indicator/SL.TLF.CACT.ZS?format=json',
-    # 'unemployment_rate': 'http://api.worldbank.org/v2/countries/{country}/indicator/SL.UEM.TOTL.ZS?format=json',
+    'unemployment_rate': 'http://api.worldbank.org/v2/countries/{country}/indicator/SL.UEM.TOTL.ZS?format=json',
     # 'exports': 'http://api.worldbank.org/v2/countries/{country}/indicator/NE.EXP.GNFS.CD?format=json',
     # 'imports': 'http://api.worldbank.org/v2/countries/{country}/indicator/NE.IMP.GNFS.CD?format=json',
 }

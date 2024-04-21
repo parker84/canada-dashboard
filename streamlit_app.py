@@ -11,7 +11,8 @@ from get_data import (
     get_consumer_price_index,
     get_gdp_growth_rate,
     get_population_growth_rate,
-    get_labour_force_participation_rate
+    get_labour_force_participation_rate,
+    get_unemployment_rate
 )
 logger = logging.getLogger(__name__)
 coloredlogs.install(level=config('LOG_LEVEL', 'INFO'))
@@ -189,6 +190,7 @@ consumer_price_index_df = get_consumer_price_index()
 gdp_growth_rate_df = get_gdp_growth_rate()
 population_growth_rate_df = get_population_growth_rate()
 labour_force_participation_rate_df = get_labour_force_participation_rate()
+unemployment_rate_df = get_unemployment_rate()
 
 # -----------------------------------------------------------------------------
 # Setup the dashboard.
@@ -232,6 +234,7 @@ with col1:
             'GDP Growth Rate 📈',
             'Population Growth Rate 📈',
             'Labour Force Participation Rate 💼',
+            'Unemployment Rate 🛋️'
         ],
     )
 
@@ -362,6 +365,21 @@ elif metric == 'Labour Force Participation Rate 💼':
         text_col_name='Labour Force Participation Rate (%-str)',
         format_metric_str='{:.1f}%',
         metric_delta_color='normal',
+        chart_tick_format=".1%"
+    )
+
+elif metric == 'Unemployment Rate 🛋️':
+    create_section_for_metric(
+        metric_df=unemployment_rate_df,
+        selected_countries=selected_countries,
+        to_year=to_year,
+        from_year=from_year,
+        section_title='Unemployment Rate',
+        metric_col_name='Unemployment Rate (%)',
+        chart_col_name='Unemployment Rate',
+        text_col_name='Unemployment Rate (%-str)',
+        format_metric_str='{:.1f}%',
+        metric_delta_color='inverse',
         chart_tick_format=".1%"
     )
 
