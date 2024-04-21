@@ -117,6 +117,25 @@ def get_government_debt():
     return government_debt_df.sort_values(by='Year', ascending=False)
 
 @st.cache_data()
+def get_consumer_price_index():
+    raw_cpi_df = get_and_combine_data_from_folder('consumer_price_index')
+    cpi_df = raw_cpi_df.rename(columns={
+        'countryiso3code': 'Country',
+        'date': 'Year',
+        'value': 'Consumer Price Index'
+    }).dropna(subset=['Consumer Price Index'])
+    cpi_df['Country'] = cpi_df['Country'].replace(COUNTRY_CODES_W_FLAGS)
+    cpi_df['Year'] = pd.to_numeric(cpi_df['Year'])
+    import ipdb; ipdb.set_trace()
+    cpi_df['Consumer Price Index (%)'] = cpi_df['Consumer Price Index'].round(0)
+    cpi_df['Consumer Price Index (%-str)'] = [
+        f'{int(val)}%' for val in
+        cpi_df['Consumer Price Index (%)']
+    ]
+    cpi_df['Consumer Price Index'] = (cpi_df['Consumer Price Index'] / 100).round(2)
+    return cpi_df.sort_values(by='Year', ascending=False)
+
+@st.cache_data()
 def get_countries(df):
     countries = list(COUNTRY_CODES_W_FLAGS.values())
     countries += [
@@ -224,7 +243,7 @@ def create_section_for_metric(
         selected_countries,
         to_year,
         from_year,
-        section_title='Annual GDP by Country',
+        section_title='Annual GDP',
         metric_col_name='GDP (T-int)',
         chart_col_name='GDP',
         text_col_name='GDP (T)',
@@ -274,6 +293,7 @@ gdp_df = get_gdp_data()
 population_df = get_population_data()
 gdp_per_capita_df = get_gdp_per_capita()
 government_debt_df = get_government_debt()
+consumer_price_index_df = get_consumer_price_index()
 
 # -----------------------------------------------------------------------------
 # Setup the dashboard.
@@ -312,7 +332,8 @@ with col1:
             'GDP / Capita 💰',
             'GDP 💰', 
             'Population 👥',
-            'Government Debt 💳'
+            'Government Debt 💳',
+            'Consumer Price Index 🛒',
         ],
     )
 
@@ -332,7 +353,7 @@ if metric == 'GDP / Capita 💰':
         selected_countries=selected_countries,
         to_year=to_year,
         from_year=from_year,
-        section_title='Annual GDP per Capita by Country',
+        section_title='Annual GDP per Capita',
         metric_col_name='GDP per Capita (k-int)',
         chart_col_name='GDP per Capita',
         text_col_name='GDP per Capita (k)',
@@ -347,7 +368,7 @@ elif metric == 'GDP 💰':
         selected_countries=selected_countries,
         to_year=to_year,
         from_year=from_year,
-        section_title='Annual GDP by Country',
+        section_title='Annual GDP',
         metric_col_name='GDP (T-int)',
         chart_col_name='GDP',
         text_col_name='GDP (T)',
@@ -362,7 +383,7 @@ elif metric == 'Population 👥':
         selected_countries=selected_countries,
         to_year=to_year,
         from_year=from_year,
-        section_title='Annual Population by Country',
+        section_title='Population',
         metric_col_name='Population (M-int)',
         chart_col_name='Population',
         text_col_name='Population (M)',
@@ -384,7 +405,21 @@ elif metric == 'Government Debt 💳':
         format_metric_str='{:.0f}%',
         metric_delta_color='inverse',
         chart_tick_format=".0%"
-    
+    )
+
+elif metric == 'Consumer Price Index 🛒':
+    create_section_for_metric(
+        metric_df=consumer_price_index_df,
+        selected_countries=selected_countries,
+        to_year=to_year,
+        from_year=from_year,
+        section_title='Consumer Price Index (vs 2010)',
+        metric_col_name='Consumer Price Index (%)',
+        chart_col_name='Consumer Price Index',
+        text_col_name='Consumer Price Index (%-str)',
+        format_metric_str='{:.0f}%',
+        metric_delta_color='inverse',
+        chart_tick_format=".0%"
     )
 
 st.caption('Data from the [World Bank Open Data](https://data.worldbank.org/) API.')

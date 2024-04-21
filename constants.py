@@ -2,7 +2,7 @@
 
 CORE_URLS_PER_COUNTRY = {
     'gdp_per_capita': 'https://api.worldbank.org/v2/countries/{country}/indicators/NY.GDP.PCAP.CD?format=json',
-    # 'consumer_price_index': 'http://api.worldbank.org/v2/countries/{country}/indicator/FP.CPI.TOTL?format=json',
+    'consumer_price_index': 'http://api.worldbank.org/v2/countries/{country}/indicator/FP.CPI.TOTL?format=json',
     'gdp': 'http://api.worldbank.org/v2/countries/{country}/indicator/NY.GDP.MKTP.CD?format=json',
     # 'gdp_growth_rate': 'http://api.worldbank.org/v2/countries/{country}/indicator/NY.GDP.MKTP.KD.ZG?format=json',
     # 'house_price_index': 'http://api.worldbank.org/v2/countries/{country}/indicator/NY.GDP.MKTP.CD?format=json',
