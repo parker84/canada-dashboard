@@ -15,6 +15,7 @@ CORE_URLS_PER_COUNTRY = {
     'imports': 'http://api.worldbank.org/v2/countries/{country}/indicator/NE.IMP.GNFS.CD?format=json',
     'trade_balance': 'http://api.worldbank.org/v2/countries/{country}/indicator/NE.TRD.GNFS.ZS?format=json',
     'birth_rate': 'http://api.worldbank.org/v2/countries/{country}/indicator/SP.DYN.CBRT.IN?format=json',
+    'death_rate': 'http://api.worldbank.org/v2/countries/{country}/indicator/SP.DYN.CDRT.IN?format=json',
     'life_expectancy': 'http://api.worldbank.org/v2/countries/{country}/indicator/SP.DYN.LE00.IN?format=json',
 }
 

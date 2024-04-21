@@ -257,3 +257,42 @@ def get_imports():
     ]
     imports_df['Imports'] = (imports_df['Imports'] / 1e9).round(0) * 1e9
     return imports_df.sort_values(by='Year', ascending=False)
+
+@st.cache_data()
+def get_birth_rate():
+    raw_birth_rate_df = get_and_combine_data_from_folder('birth_rate')
+    birth_rate_df = raw_birth_rate_df.rename(columns={
+        'countryiso3code': 'Country',
+        'date': 'Year',
+        'value': 'Birth Rate'
+    }).dropna(subset=['Birth Rate'])
+    birth_rate_df['Country'] = birth_rate_df['Country'].replace(COUNTRY_CODES_W_FLAGS)
+    birth_rate_df['Year'] = pd.to_numeric(birth_rate_df['Year'])
+    birth_rate_df['Birth Rate'] = birth_rate_df['Birth Rate'].round(1)
+    return birth_rate_df.sort_values(by='Year', ascending=False)
+
+@st.cache_data()
+def get_death_rate():
+    raw_death_rate_df = get_and_combine_data_from_folder('death_rate')
+    death_rate_df = raw_death_rate_df.rename(columns={
+        'countryiso3code': 'Country',
+        'date': 'Year',
+        'value': 'Death Rate'
+    }).dropna(subset=['Death Rate'])
+    death_rate_df['Country'] = death_rate_df['Country'].replace(COUNTRY_CODES_W_FLAGS)
+    death_rate_df['Year'] = pd.to_numeric(death_rate_df['Year'])
+    death_rate_df['Death Rate'] = death_rate_df['Death Rate'].round(1)
+    return death_rate_df.sort_values(by='Year', ascending=False)
+
+@st.cache_data()
+def get_life_expectancy():
+    raw_life_expectancy_df = get_and_combine_data_from_folder('life_expectancy')
+    life_expectancy_df = raw_life_expectancy_df.rename(columns={
+        'countryiso3code': 'Country',
+        'date': 'Year',
+        'value': 'Life Expectancy'
+    }).dropna(subset=['Life Expectancy'])
+    life_expectancy_df['Country'] = life_expectancy_df['Country'].replace(COUNTRY_CODES_W_FLAGS)
+    life_expectancy_df['Year'] = pd.to_numeric(life_expectancy_df['Year'])
+    life_expectancy_df['Life Expectancy'] = life_expectancy_df['Life Expectancy'].round(1)
+    return life_expectancy_df.sort_values(by='Year', ascending=False)

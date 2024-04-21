@@ -15,7 +15,10 @@ from get_data import (
     get_unemployment_rate,
     get_trade_balance,
     get_exports,
-    get_imports
+    get_imports,
+    get_birth_rate,
+    get_death_rate,
+    get_life_expectancy
 )
 logger = logging.getLogger(__name__)
 coloredlogs.install(level=config('LOG_LEVEL', 'INFO'))
@@ -152,7 +155,9 @@ def create_section_for_metric(
         & (metric_df['Year'] <= to_year)
         & (from_year <= metric_df['Year'])
     ]
-    max_year_filtered_df = filtered_metric_df[filtered_metric_df['Year'] == to_year].sort_values(by=metric_col_name, ascending=False)
+    max_year_filtered_df = filtered_metric_df[
+        filtered_metric_df['Year'] == filtered_metric_df['Year'].max()
+    ].sort_values(by=metric_col_name, ascending=False)
 
     st.header(section_title, divider='gray')
 
@@ -197,6 +202,9 @@ unemployment_rate_df = get_unemployment_rate()
 trade_balance_df = get_trade_balance()
 exports_df = get_exports()
 imports_df = get_imports()
+birth_rate_df = get_birth_rate()
+death_rate_df = get_death_rate()
+life_expectancy_df = get_life_expectancy()
 
 # -----------------------------------------------------------------------------
 # Setup the dashboard.
@@ -244,6 +252,9 @@ with col1:
             'Exports ➡️',
             'Imports ⬅️',
             'Trade Balance 📦',
+            'Birth Rate 🍼',
+            'Death Rate 💀',
+            'Life Expectancy 🎂'
         ],
     )
 
@@ -435,6 +446,51 @@ elif metric == 'Trade Balance 📦':
         format_metric_str='{:.1f}%',
         metric_delta_color='normal',
         chart_tick_format=".1%"
+    )
+
+elif metric == 'Birth Rate 🍼':
+    create_section_for_metric(
+        metric_df=birth_rate_df,
+        selected_countries=selected_countries,
+        to_year=to_year,
+        from_year=from_year,
+        section_title='Birth Rate (per 1,000 people)',
+        metric_col_name='Birth Rate',
+        chart_col_name='Birth Rate',
+        text_col_name='Birth Rate',
+        format_metric_str='{:.1f}',
+        metric_delta_color='normal',
+        chart_tick_format=".1f"
+    )
+
+elif metric == 'Death Rate 💀':
+    create_section_for_metric(
+        metric_df=death_rate_df,
+        selected_countries=selected_countries,
+        to_year=to_year,
+        from_year=from_year,
+        section_title='Death Rate (per 1,000 people)',
+        metric_col_name='Death Rate',
+        chart_col_name='Death Rate',
+        text_col_name='Death Rate',
+        format_metric_str='{:.1f}',
+        metric_delta_color='normal',
+        chart_tick_format=".1f"
+    )
+
+elif metric == 'Life Expectancy 🎂':
+    create_section_for_metric(
+        metric_df=life_expectancy_df,
+        selected_countries=selected_countries,
+        to_year=to_year,
+        from_year=from_year,
+        section_title='Life Expectancy',
+        metric_col_name='Life Expectancy',
+        chart_col_name='Life Expectancy',
+        text_col_name='Life Expectancy',
+        format_metric_str='{:.1f}',
+        metric_delta_color='normal',
+        chart_tick_format=".1f"
     )
 
 st.caption('Data from the [World Bank Open Data](https://data.worldbank.org/) API.')
