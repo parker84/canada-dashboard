@@ -117,6 +117,24 @@ def get_government_debt():
     return government_debt_df.sort_values(by='Year', ascending=False)
 
 @st.cache_data()
+def get_labour_force_participation_rate():
+    raw_lfpr_df = get_and_combine_data_from_folder('labour_force_participation_rate')
+    lfpr_df = raw_lfpr_df.rename(columns={
+        'countryiso3code': 'Country',
+        'date': 'Year',
+        'value': 'Labour Force Participation Rate'
+    }).dropna(subset=['Labour Force Participation Rate'])
+    lfpr_df['Country'] = lfpr_df['Country'].replace(COUNTRY_CODES_W_FLAGS)
+    lfpr_df['Year'] = pd.to_numeric(lfpr_df['Year'])
+    lfpr_df['Labour Force Participation Rate (%)'] = lfpr_df['Labour Force Participation Rate'].round(1)
+    lfpr_df['Labour Force Participation Rate (%-str)'] = [
+        f'{round(val, 1)}%' for val in
+        lfpr_df['Labour Force Participation Rate (%)']
+    ]
+    lfpr_df['Labour Force Participation Rate'] = (lfpr_df['Labour Force Participation Rate'] / 100).round(3)
+    return lfpr_df.sort_values(by='Year', ascending=False)
+
+@st.cache_data()
 def get_consumer_price_index():
     raw_cpi_df = get_and_combine_data_from_folder('consumer_price_index')
     cpi_df = raw_cpi_df.rename(columns={
@@ -341,6 +359,7 @@ government_debt_df = get_government_debt()
 consumer_price_index_df = get_consumer_price_index()
 gdp_growth_rate_df = get_gdp_growth_rate()
 population_growth_rate_df = get_population_growth_rate()
+labour_force_participation_rate_df = get_labour_force_participation_rate()
 
 # -----------------------------------------------------------------------------
 # Setup the dashboard.
@@ -382,7 +401,8 @@ with col1:
             'Government Debt 💳',
             'Consumer Price Index 🛒',
             'GDP Growth Rate 📈',
-            'Population Growth Rate 📈'
+            'Population Growth Rate 📈',
+            'Labour Force Participation Rate 💼',
         ],
     )
 
@@ -496,6 +516,21 @@ elif metric == 'Population Growth Rate 📈':
         metric_col_name='Population Growth Rate (%)',
         chart_col_name='Population Growth Rate',
         text_col_name='Population Growth Rate (%-str)',
+        format_metric_str='{:.1f}%',
+        metric_delta_color='normal',
+        chart_tick_format=".1%"
+    )
+
+elif metric == 'Labour Force Participation Rate 💼':
+    create_section_for_metric(
+        metric_df=labour_force_participation_rate_df,
+        selected_countries=selected_countries,
+        to_year=to_year,
+        from_year=from_year,
+        section_title='Labour Force Participation Rate',
+        metric_col_name='Labour Force Participation Rate (%)',
+        chart_col_name='Labour Force Participation Rate',
+        text_col_name='Labour Force Participation Rate (%-str)',
         format_metric_str='{:.1f}%',
         metric_delta_color='normal',
         chart_tick_format=".1%"
