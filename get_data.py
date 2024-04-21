@@ -203,3 +203,21 @@ def get_unemployment_rate():
     ]
     unemployment_rate_df['Unemployment Rate'] = (unemployment_rate_df['Unemployment Rate'] / 100).round(3)
     return unemployment_rate_df.sort_values(by='Year', ascending=False)
+
+@st.cache_data()
+def get_exports():
+    raw_exports_df = get_and_combine_data_from_folder('exports')
+    exports_df = raw_exports_df.rename(columns={
+        'countryiso3code': 'Country',
+        'date': 'Year',
+        'value': 'Exports'
+    }).dropna(subset=['Exports'])
+    exports_df['Country'] = exports_df['Country'].replace(COUNTRY_CODES_W_FLAGS)
+    exports_df['Year'] = pd.to_numeric(exports_df['Year'])
+    exports_df['Exports (T-int)'] = round(exports_df['Exports'] / 1e12, 2)
+    exports_df['Exports (T)'] = [
+        f'${val:,.2f}T' for val in
+        exports_df['Exports (T-int)']
+    ]
+    exports_df['Exports'] = (exports_df['Exports'] / 1e9).round(0) * 1e9
+    return exports_df.sort_values(by='Year', ascending=False)

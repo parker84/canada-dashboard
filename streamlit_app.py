@@ -12,7 +12,8 @@ from get_data import (
     get_gdp_growth_rate,
     get_population_growth_rate,
     get_labour_force_participation_rate,
-    get_unemployment_rate
+    get_unemployment_rate,
+    get_exports
 )
 logger = logging.getLogger(__name__)
 coloredlogs.install(level=config('LOG_LEVEL', 'INFO'))
@@ -191,6 +192,7 @@ gdp_growth_rate_df = get_gdp_growth_rate()
 population_growth_rate_df = get_population_growth_rate()
 labour_force_participation_rate_df = get_labour_force_participation_rate()
 unemployment_rate_df = get_unemployment_rate()
+exports_df = get_exports()
 
 # -----------------------------------------------------------------------------
 # Setup the dashboard.
@@ -234,7 +236,8 @@ with col1:
             'GDP Growth Rate 📈',
             'Population Growth Rate 📈',
             'Labour Force Participation Rate 💼',
-            'Unemployment Rate 🛋️'
+            'Unemployment Rate 🛋️',
+            'Exports 💸'
         ],
     )
 
@@ -381,6 +384,21 @@ elif metric == 'Unemployment Rate 🛋️':
         format_metric_str='{:.1f}%',
         metric_delta_color='inverse',
         chart_tick_format=".1%"
+    )
+
+elif metric == 'Exports 💸':
+    create_section_for_metric(
+        metric_df=exports_df,
+        selected_countries=selected_countries,
+        to_year=to_year,
+        from_year=from_year,
+        section_title='Exports',
+        metric_col_name='Exports (T-int)',
+        chart_col_name='Exports',
+        text_col_name='Exports (T)',
+        format_metric_str='${:,.2f}T',
+        metric_delta_color='normal',
+        chart_tick_format='$.3s'
     )
 
 st.caption('Data from the [World Bank Open Data](https://data.worldbank.org/) API.')
