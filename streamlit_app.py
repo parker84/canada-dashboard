@@ -54,7 +54,7 @@ def get_gdp_data():
     }).dropna(subset=['GDP'])
     gdp_df['Country'] = gdp_df['Country'].replace(COUNTRY_CODES_W_FLAGS)
     gdp_df['Year'] = pd.to_numeric(gdp_df['Year'])
-    gdp_df['GDP (T-int)'] = round(gdp_df['GDP'] / 1e12, 1)
+    gdp_df['GDP (T-int)'] = round(gdp_df['GDP'] / 1e12, 2)
     gdp_df['GDP (T)'] = [
         f'${val:,.1f}T' for val in
         gdp_df['GDP (T-int)']
@@ -136,13 +136,23 @@ def get_consumer_price_index():
 
 @st.cache_data()
 def get_gdp_growth_rate():
-    raw_gdp_growth_rate_df = get_and_combine_data_from_folder('gdp_growth_rate')
-    gdp_growth_rate_df = raw_gdp_growth_rate_df.rename(columns={
+    raw_gdp_df = get_and_combine_data_from_folder('gdp')
+    gdp_df = raw_gdp_df.rename(columns={
         'countryiso3code': 'Country',
         'date': 'Year',
-        'value': 'GDP Growth Rate'
-    }).dropna(subset=['GDP Growth Rate'])
-    gdp_growth_rate_df['Country'] = gdp_growth_rate_df['Country'].replace(COUNTRY_CODES_W_FLAGS)
+        'value': 'GDP'
+    }).dropna(subset=['GDP'])
+    gdp_df['Country'] = gdp_df['Country'].replace(COUNTRY_CODES_W_FLAGS)
+    gdp_df['Year'] = pd.to_numeric(gdp_df['Year'])
+    gdp_df_prev_year = gdp_df.copy()[['Country', 'Year', 'GDP']]
+    gdp_df_prev_year['Year'] = gdp_df_prev_year['Year'] + 1
+    gdp_growth_rate_df = gdp_df.merge(
+        gdp_df_prev_year,
+        on=['Country', 'Year'],
+        how='left',
+        suffixes=('', '_prev')
+    )
+    gdp_growth_rate_df['GDP Growth Rate'] = 100 * ((gdp_growth_rate_df['GDP'] / gdp_growth_rate_df['GDP_prev']) - 1)
     gdp_growth_rate_df['Year'] = pd.to_numeric(gdp_growth_rate_df['Year'])
     gdp_growth_rate_df['GDP Growth Rate (%)'] = gdp_growth_rate_df['GDP Growth Rate'].round(1)
     gdp_growth_rate_df['GDP Growth Rate (%-str)'] = [
@@ -462,7 +472,6 @@ elif metric == 'Consumer Price Index 🛒':
     )
 
 elif metric == 'GDP Growth Rate 📈':
-    # TODO: these growth rates are not aligning with the growth rates on the actual gdp / population
     create_section_for_metric(
         metric_df=gdp_growth_rate_df,
         selected_countries=selected_countries,
@@ -478,7 +487,6 @@ elif metric == 'GDP Growth Rate 📈':
     )
 
 elif metric == 'Population Growth Rate 📈':
-    # TODO: these growth rates are not aligning with the growth rates on the actual gdp / population
     create_section_for_metric(
         metric_df=population_growth_rate_df,
         selected_countries=selected_countries,
