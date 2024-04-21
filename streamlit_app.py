@@ -126,7 +126,6 @@ def get_consumer_price_index():
     }).dropna(subset=['Consumer Price Index'])
     cpi_df['Country'] = cpi_df['Country'].replace(COUNTRY_CODES_W_FLAGS)
     cpi_df['Year'] = pd.to_numeric(cpi_df['Year'])
-    import ipdb; ipdb.set_trace()
     cpi_df['Consumer Price Index (%)'] = cpi_df['Consumer Price Index'].round(0)
     cpi_df['Consumer Price Index (%-str)'] = [
         f'{int(val)}%' for val in
@@ -134,6 +133,24 @@ def get_consumer_price_index():
     ]
     cpi_df['Consumer Price Index'] = (cpi_df['Consumer Price Index'] / 100).round(2)
     return cpi_df.sort_values(by='Year', ascending=False)
+
+@st.cache_data()
+def get_gdp_growth_rate():
+    raw_gdp_growth_rate_df = get_and_combine_data_from_folder('gdp_growth_rate')
+    gdp_growth_rate_df = raw_gdp_growth_rate_df.rename(columns={
+        'countryiso3code': 'Country',
+        'date': 'Year',
+        'value': 'GDP Growth Rate'
+    }).dropna(subset=['GDP Growth Rate'])
+    gdp_growth_rate_df['Country'] = gdp_growth_rate_df['Country'].replace(COUNTRY_CODES_W_FLAGS)
+    gdp_growth_rate_df['Year'] = pd.to_numeric(gdp_growth_rate_df['Year'])
+    gdp_growth_rate_df['GDP Growth Rate (%)'] = gdp_growth_rate_df['GDP Growth Rate'].round(1)
+    gdp_growth_rate_df['GDP Growth Rate (%-str)'] = [
+        f'{round(val, 1)}%' for val in
+        gdp_growth_rate_df['GDP Growth Rate (%)']
+    ]
+    gdp_growth_rate_df['GDP Growth Rate'] = (gdp_growth_rate_df['GDP Growth Rate'] / 100).round(3)
+    return gdp_growth_rate_df.sort_values(by='Year', ascending=False)
 
 @st.cache_data()
 def get_countries(df):
@@ -294,6 +311,7 @@ population_df = get_population_data()
 gdp_per_capita_df = get_gdp_per_capita()
 government_debt_df = get_government_debt()
 consumer_price_index_df = get_consumer_price_index()
+gdp_growth_rate_df = get_gdp_growth_rate()
 
 # -----------------------------------------------------------------------------
 # Setup the dashboard.
@@ -334,6 +352,7 @@ with col1:
             'Population 👥',
             'Government Debt 💳',
             'Consumer Price Index 🛒',
+            'GDP Growth Rate 📈'
         ],
     )
 
@@ -420,6 +439,21 @@ elif metric == 'Consumer Price Index 🛒':
         format_metric_str='{:.0f}%',
         metric_delta_color='inverse',
         chart_tick_format=".0%"
+    )
+
+elif metric == 'GDP Growth Rate 📈':
+    create_section_for_metric(
+        metric_df=gdp_growth_rate_df,
+        selected_countries=selected_countries,
+        to_year=to_year,
+        from_year=from_year,
+        section_title='GDP Growth Rate',
+        metric_col_name='GDP Growth Rate (%)',
+        chart_col_name='GDP Growth Rate',
+        text_col_name='GDP Growth Rate (%-str)',
+        format_metric_str='{:.1f}%',
+        metric_delta_color='normal',
+        chart_tick_format=".1%"
     )
 
 st.caption('Data from the [World Bank Open Data](https://data.worldbank.org/) API.')
