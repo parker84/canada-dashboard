@@ -221,3 +221,21 @@ def get_exports():
     ]
     exports_df['Exports'] = (exports_df['Exports'] / 1e9).round(0) * 1e9
     return exports_df.sort_values(by='Year', ascending=False)
+
+@st.cache_data()
+def get_imports():
+    raw_imports_df = get_and_combine_data_from_folder('imports')
+    imports_df = raw_imports_df.rename(columns={
+        'countryiso3code': 'Country',
+        'date': 'Year',
+        'value': 'Imports'
+    }).dropna(subset=['Imports'])
+    imports_df['Country'] = imports_df['Country'].replace(COUNTRY_CODES_W_FLAGS)
+    imports_df['Year'] = pd.to_numeric(imports_df['Year'])
+    imports_df['Imports (T-int)'] = round(imports_df['Imports'] / 1e12, 2)
+    imports_df['Imports (T)'] = [
+        f'${val:,.2f}T' for val in
+        imports_df['Imports (T-int)']
+    ]
+    imports_df['Imports'] = (imports_df['Imports'] / 1e9).round(0) * 1e9
+    return imports_df.sort_values(by='Year', ascending=False)

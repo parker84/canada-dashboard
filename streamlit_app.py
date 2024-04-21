@@ -13,7 +13,8 @@ from get_data import (
     get_population_growth_rate,
     get_labour_force_participation_rate,
     get_unemployment_rate,
-    get_exports
+    get_exports,
+    get_imports
 )
 logger = logging.getLogger(__name__)
 coloredlogs.install(level=config('LOG_LEVEL', 'INFO'))
@@ -193,6 +194,7 @@ population_growth_rate_df = get_population_growth_rate()
 labour_force_participation_rate_df = get_labour_force_participation_rate()
 unemployment_rate_df = get_unemployment_rate()
 exports_df = get_exports()
+imports_df = get_imports()
 
 # -----------------------------------------------------------------------------
 # Setup the dashboard.
@@ -237,7 +239,8 @@ with col1:
             'Population Growth Rate 📈',
             'Labour Force Participation Rate 💼',
             'Unemployment Rate 🛋️',
-            'Exports 💸'
+            'Exports ➡️',
+            'Imports ⬅️',
         ],
     )
 
@@ -386,7 +389,7 @@ elif metric == 'Unemployment Rate 🛋️':
         chart_tick_format=".1%"
     )
 
-elif metric == 'Exports 💸':
+elif metric == 'Exports ➡️':
     create_section_for_metric(
         metric_df=exports_df,
         selected_countries=selected_countries,
@@ -396,6 +399,21 @@ elif metric == 'Exports 💸':
         metric_col_name='Exports (T-int)',
         chart_col_name='Exports',
         text_col_name='Exports (T)',
+        format_metric_str='${:,.2f}T',
+        metric_delta_color='normal',
+        chart_tick_format='$.3s'
+    )
+
+elif metric == 'Imports ⬅️':
+    create_section_for_metric(
+        metric_df=imports_df,
+        selected_countries=selected_countries,
+        to_year=to_year,
+        from_year=from_year,
+        section_title='Imports',
+        metric_col_name='Imports (T-int)',
+        chart_col_name='Imports',
+        text_col_name='Imports (T)',
         format_metric_str='${:,.2f}T',
         metric_delta_color='normal',
         chart_tick_format='$.3s'
