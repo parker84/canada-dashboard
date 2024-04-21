@@ -99,6 +99,24 @@ def get_gdp_per_capita():
     return gdp_per_capita_df.sort_values(by='Year', ascending=False)
 
 @st.cache_data()
+def get_government_debt():
+    raw_government_debt_df = get_and_combine_data_from_folder('government_debt')
+    government_debt_df = raw_government_debt_df.rename(columns={
+        'countryiso3code': 'Country',
+        'date': 'Year',
+        'value': 'Government Debt vs GDP'
+    }).dropna(subset=['Government Debt vs GDP'])
+    government_debt_df['Country'] = government_debt_df['Country'].replace(COUNTRY_CODES_W_FLAGS)
+    government_debt_df['Year'] = pd.to_numeric(government_debt_df['Year'])
+    government_debt_df['Government Debt vs GDP (%)'] = government_debt_df['Government Debt vs GDP'].round(0)
+    government_debt_df['Government Debt vs GDP (%-str)'] = [
+        f'{int(val)}%' for val in
+        government_debt_df['Government Debt vs GDP (%)']
+    ]
+    government_debt_df['Government Debt vs GDP'] = (government_debt_df['Government Debt vs GDP'] / 100).round(2)
+    return government_debt_df.sort_values(by='Year', ascending=False)
+
+@st.cache_data()
 def get_countries(df):
     countries = list(COUNTRY_CODES_W_FLAGS.values())
     countries += [
@@ -201,11 +219,61 @@ def show_metric(
             help=help
         )
 
+def create_section_for_metric(
+        metric_df,
+        selected_countries,
+        to_year,
+        from_year,
+        section_title='Annual GDP by Country',
+        metric_col_name='GDP (T-int)',
+        chart_col_name='GDP',
+        text_col_name='GDP (T)',
+        format_metric_str='${:,.1f}T',
+        metric_delta_color='normal',
+        chart_tick_format='$.2s'
+):
+    filtered_metric_df = metric_df[
+        (metric_df['Country'].isin(selected_countries))
+        & (metric_df['Year'] <= to_year)
+        & (from_year <= metric_df['Year'])
+    ]
+    max_year_filtered_df = filtered_metric_df[filtered_metric_df['Year'] == to_year].sort_values(by=metric_col_name, ascending=False)
+
+    st.header(section_title, divider='gray')
+
+    countries = ['CAN 🇨🇦'] + [
+        val for val in
+        max_year_filtered_df['Country']
+        if val != 'CAN 🇨🇦'
+    ]
+    cols = st.columns(len(selected_countries))
+    i = 0
+    for country in countries:
+        with cols[i]:
+            show_metric(
+                filtered_metric_df[filtered_metric_df['Country'] == country],
+                metric_col_name,
+                title=country,
+                format_str=format_metric_str,
+                delta_color=metric_delta_color,
+            )
+        i += 1
+
+    plot_metric_by_group(
+        filtered_metric_df,
+        'Country',
+        bar_chart=True,
+        metric_col=chart_col_name,
+        text_col=text_col_name,
+        tickformat=chart_tick_format
+    )
+
 # -----------------------------------------------------------------------------
 # Load the data.
 gdp_df = get_gdp_data()
 population_df = get_population_data()
 gdp_per_capita_df = get_gdp_per_capita()
+government_debt_df = get_government_debt()
 
 # -----------------------------------------------------------------------------
 # Setup the dashboard.
@@ -243,7 +311,8 @@ with col1:
         [   
             'GDP / Capita 💰',
             'GDP 💰', 
-            'Population 👥'
+            'Population 👥',
+            'Government Debt 💳'
         ],
     )
 
@@ -258,122 +327,64 @@ with col2:
 # Show the data.
 
 if metric == 'GDP / Capita 💰':
-    # Filter the data
-    filtered_gdp_per_capita_df = gdp_per_capita_df[
-        (gdp_per_capita_df['Country'].isin(selected_countries))
-        & (gdp_per_capita_df['Year'] <= to_year)
-        & (from_year <= gdp_per_capita_df['Year'])
-    ]
-    max_year_filtered_df = filtered_gdp_per_capita_df[filtered_gdp_per_capita_df['Year'] == to_year].sort_values(by='GDP per Capita', ascending=False)
-
-    st.header('Annual GDP per Capita by Country', divider='gray')
-
-    ''
-
-    countries = ['CAN 🇨🇦'] + [
-        val for val in
-        max_year_filtered_df['Country']
-        if val != 'CAN 🇨🇦'
-    ]
-    cols = st.columns(len(selected_countries))
-    i = 0
-    for country in countries:
-        with cols[i]:
-            show_metric(
-                filtered_gdp_per_capita_df[filtered_gdp_per_capita_df['Country'] == country],
-                'GDP per Capita (k-int)',
-                title=country,
-                format_str='${:,.0f}k',
-                delta_color='normal',
-            )
-        i += 1
-
-    plot_metric_by_group(
-        filtered_gdp_per_capita_df,
-        'Country',
-        bar_chart=True,
-        metric_col='GDP per Capita',
-        text_col='GDP per Capita (k)',
-        tickformat='$.2s'
+    create_section_for_metric(
+        metric_df=gdp_per_capita_df,
+        selected_countries=selected_countries,
+        to_year=to_year,
+        from_year=from_year,
+        section_title='Annual GDP per Capita by Country',
+        metric_col_name='GDP per Capita (k-int)',
+        chart_col_name='GDP per Capita',
+        text_col_name='GDP per Capita (k)',
+        format_metric_str='${:,.0f}k',
+        metric_delta_color='normal',
+        chart_tick_format='$.2s'
     )
 
 elif metric == 'GDP 💰':
-    # Filter the data
-    filtered_gdp_df = gdp_df[
-        (gdp_df['Country'].isin(selected_countries))
-        & (gdp_df['Year'] <= to_year)
-        & (from_year <= gdp_df['Year'])
-    ]
-    max_year_filtered_df = filtered_gdp_df[filtered_gdp_df['Year'] == to_year].sort_values(by='GDP', ascending=False)
-
-    st.header('Annual GDP by Country', divider='gray')
-
-    ''
-
-    cols = st.columns(len(selected_countries))
-    i = 0
-    countries = ['CAN 🇨🇦'] + [
-        val for val in
-        max_year_filtered_df['Country']
-        if val != 'CAN 🇨🇦'
-    ]
-    for country in countries:
-        with cols[i]:
-            show_metric(
-                filtered_gdp_df[filtered_gdp_df['Country'] == country],
-                'GDP (T-int)',
-                title=country,
-                format_str='${:,.1f}T',
-                delta_color='normal',
-            )
-        i += 1
-
-    plot_metric_by_group(
-        filtered_gdp_df,
-        'Country',
-        bar_chart=True,
-        metric_col='GDP',
-        text_col='GDP (T)',
-        tickformat='$.2s'
+    create_section_for_metric(
+        metric_df=gdp_df,
+        selected_countries=selected_countries,
+        to_year=to_year,
+        from_year=from_year,
+        section_title='Annual GDP by Country',
+        metric_col_name='GDP (T-int)',
+        chart_col_name='GDP',
+        text_col_name='GDP (T)',
+        format_metric_str='${:,.1f}T',
+        metric_delta_color='normal',
+        chart_tick_format='$.2s'
     )
 
-elif metric == 'Population 👥': # TODO: consider refactoring to use a function
-    # Filter the data
-    filtered_population_df = population_df[
-        (population_df['Country'].isin(selected_countries))
-        & (population_df['Year'] <= to_year)
-        & (from_year <= population_df['Year'])
-    ]
-    max_year_filtered_df = filtered_population_df[filtered_population_df['Year'] == to_year].sort_values(by='Population', ascending=False)
+elif metric == 'Population 👥':
+    create_section_for_metric(
+        metric_df=population_df,
+        selected_countries=selected_countries,
+        to_year=to_year,
+        from_year=from_year,
+        section_title='Annual Population by Country',
+        metric_col_name='Population (M-int)',
+        chart_col_name='Population',
+        text_col_name='Population (M)',
+        format_metric_str='{:,.1f}M',
+        metric_delta_color='normal',
+        chart_tick_format=None
+    )
 
-    st.header('Annual Population by Country', divider='gray')
-
-    ''
-
-    countries = ['CAN 🇨🇦'] + [
-        val for val in
-        max_year_filtered_df['Country']
-        if val != 'CAN 🇨🇦'
-    ]
-    cols = st.columns(len(selected_countries))
-    i = 0
-    for country in countries:
-        with cols[i]:
-            show_metric(
-                filtered_population_df[filtered_population_df['Country'] == country],
-                'Population (M-int)',
-                title=country,
-                format_str='{:,.1f}M',
-                delta_color='normal',
-            )
-        i += 1
-
-    plot_metric_by_group(
-        filtered_population_df,
-        'Country',
-        bar_chart=True,
-        metric_col='Population',
-        text_col='Population (M)'
+elif metric == 'Government Debt 💳':
+    create_section_for_metric(
+        metric_df=government_debt_df,
+        selected_countries=selected_countries,
+        to_year=to_year,
+        from_year=from_year,
+        section_title='Government Debt vs GDP',
+        metric_col_name='Government Debt vs GDP (%)',
+        chart_col_name='Government Debt vs GDP',
+        text_col_name='Government Debt vs GDP (%-str)',
+        format_metric_str='{:.0f}%',
+        metric_delta_color='inverse',
+        chart_tick_format=".0%"
+    
     )
 
 st.caption('Data from the [World Bank Open Data](https://data.worldbank.org/) API.')
