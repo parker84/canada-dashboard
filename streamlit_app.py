@@ -153,6 +153,24 @@ def get_gdp_growth_rate():
     return gdp_growth_rate_df.sort_values(by='Year', ascending=False)
 
 @st.cache_data()
+def get_population_growth_rate():
+    raw_population_growth_rate_df = get_and_combine_data_from_folder('population_growth_rate')
+    population_growth_rate_df = raw_population_growth_rate_df.rename(columns={
+        'countryiso3code': 'Country',
+        'date': 'Year',
+        'value': 'Population Growth Rate'
+    }).dropna(subset=['Population Growth Rate'])
+    population_growth_rate_df['Country'] = population_growth_rate_df['Country'].replace(COUNTRY_CODES_W_FLAGS)
+    population_growth_rate_df['Year'] = pd.to_numeric(population_growth_rate_df['Year'])
+    population_growth_rate_df['Population Growth Rate (%)'] = population_growth_rate_df['Population Growth Rate'].round(1)
+    population_growth_rate_df['Population Growth Rate (%-str)'] = [
+        f'{round(val, 1)}%' for val in
+        population_growth_rate_df['Population Growth Rate (%)']
+    ]
+    population_growth_rate_df['Population Growth Rate'] = (population_growth_rate_df['Population Growth Rate'] / 100).round(3)
+    return population_growth_rate_df.sort_values(by='Year', ascending=False)
+
+@st.cache_data()
 def get_countries(df):
     countries = list(COUNTRY_CODES_W_FLAGS.values())
     countries += [
@@ -312,6 +330,7 @@ gdp_per_capita_df = get_gdp_per_capita()
 government_debt_df = get_government_debt()
 consumer_price_index_df = get_consumer_price_index()
 gdp_growth_rate_df = get_gdp_growth_rate()
+population_growth_rate_df = get_population_growth_rate()
 
 # -----------------------------------------------------------------------------
 # Setup the dashboard.
@@ -352,7 +371,8 @@ with col1:
             'Population 👥',
             'Government Debt 💳',
             'Consumer Price Index 🛒',
-            'GDP Growth Rate 📈'
+            'GDP Growth Rate 📈',
+            'Population Growth Rate 📈'
         ],
     )
 
@@ -442,6 +462,7 @@ elif metric == 'Consumer Price Index 🛒':
     )
 
 elif metric == 'GDP Growth Rate 📈':
+    # TODO: these growth rates are not aligning with the growth rates on the actual gdp / population
     create_section_for_metric(
         metric_df=gdp_growth_rate_df,
         selected_countries=selected_countries,
@@ -451,6 +472,22 @@ elif metric == 'GDP Growth Rate 📈':
         metric_col_name='GDP Growth Rate (%)',
         chart_col_name='GDP Growth Rate',
         text_col_name='GDP Growth Rate (%-str)',
+        format_metric_str='{:.1f}%',
+        metric_delta_color='normal',
+        chart_tick_format=".1%"
+    )
+
+elif metric == 'Population Growth Rate 📈':
+    # TODO: these growth rates are not aligning with the growth rates on the actual gdp / population
+    create_section_for_metric(
+        metric_df=population_growth_rate_df,
+        selected_countries=selected_countries,
+        to_year=to_year,
+        from_year=from_year,
+        section_title='Population Growth Rate',
+        metric_col_name='Population Growth Rate (%)',
+        chart_col_name='Population Growth Rate',
+        text_col_name='Population Growth Rate (%-str)',
         format_metric_str='{:.1f}%',
         metric_delta_color='normal',
         chart_tick_format=".1%"
